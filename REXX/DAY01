@@ -10,6 +10,9 @@ say "Fuel for mass 1969 ="f                                             00054008
 f = fuel(100756)                                                        00055008
 say "Fuel for mass 100656 ="f                                           00056008
                                                                         00060000
+                                                                        00061012
+parse source stuff                                                      00062012
+say stuff                                                               00063012
 exit                                                                    00070000
                                                                         00080000
 fuel:                                                                   00090000
