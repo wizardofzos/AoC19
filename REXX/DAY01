@@ -1,6 +1,7 @@
 /* REXX */                                                              00010000
                                                                         00011022
 /* Solving day one for Advent of Code in REXX on z/OS */                00012022
+/* And doing some final testing on zigi 1.2 :)        */                00013023
                                                                         00020000
 say "testing"                                                           00030000
 f = fuel(12)                                                            00040001
