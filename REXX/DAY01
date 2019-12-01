@@ -1,0 +1,27 @@
+/* REXX */                                                              00010000
+                                                                        00020000
+say "testing"                                                           00030000
+f = fuel(12)                                                            00040001
+say "Fuel for mass 12 ="f                                               00050001
+f = fuel(14)                                                            00051008
+say "Fuel for mass 14 ="f                                               00052008
+f = fuel(1969)                                                          00053008
+say "Fuel for mass 1969 ="f                                             00054008
+f = fuel(100756)                                                        00055008
+say "Fuel for mass 100656 ="f                                           00056008
+                                                                        00060000
+exit                                                                    00070000
+                                                                        00080000
+fuel:                                                                   00090000
+  parse arg mass                                                        00110000
+  x = mass / 3                                                          00120000
+  x = FLOOR(x)                                                          00130003
+  x = x - 2                                                             00131004
+  return x                                                              00140004
+                                                                        00150003
+floor:                                                                  00160003
+  parse arg number                                                      00170003
+  parse var number num '.' decimals                                     00180010
+  if num = "NUM"                                                        00181007
+  then return number                                                    00182007
+  else return num                                                       00190006
