@@ -42,6 +42,8 @@ a =a"2,0,14,0"                                                          00079044
                                                                         00079144
 r = run(a   )                                                           00079244
 say a    "=>" r                                                         00079344
+b = translate(r, ' ',',')                                               00079449
+say "Solution: " word(b,1)                                              00079549
                                                                         00079643
                                                                         00079745
 say "part two... pretty nasty lol"                                      00079845
