@@ -3,12 +3,12 @@
 range = "158126-624574"
 
 
-r = check('112233')
-say   r
-r = check('123444')
-say   r
-r = check('111122')
-say   r
+o = check('112233')
+say   o
+o = check('123444')
+say   o
+o = check('111122')
+say   o
 
 
 Call validPasses range, 1
@@ -71,24 +71,25 @@ validPasses:
 
 check:
   parse arg passwd
-  res = 1
-  do i = 0 to 9
-    z3 = i || i || i
-    if pos(z3, passwd) > 0 then do
-      res = 0
-      do j = 0 to 9
-        if j /= i then do
-          z2 = j || j
-          g = pos(z2,passwd)
-          if pos(z2,passwd) > 0 then do
-            if substr(passwd,g+2,1) /= j & g+2 <= 6 then do
-              res = 1
-            end
-            if g = 5 then res = 1
-            trace off
-          end
-        end
+  pl= translate(passwd,'ABCDEFGHIJ','0123456789')
+  curr = substr(pl,1,1)
+  len = 1
+  r = ''
+  do i = 2 to 6
+    if substr(pl,i,1) = curr then do
+      len = len + 1
+      if i = 6 then do
+        r = r || len || 'x' || curr
       end
     end
+    else do
+      r = r || len || 'x' || curr
+      len = 1
+      curr = substr(pl,i,1)
+    end
   end
+  if pos('2',r) > 0 then
+    res = 1
+  else
+    res = 0
   return res
