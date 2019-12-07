@@ -1,31 +1,5 @@
 /* REXX */                                                              00010000
-/*                                                                      00020000
-say "Testing"                                                           00030000
-prog = "1002,4,3,4,33"                                                  00040000
-say prog                                                                00050000
-r = run2(prog)                                                          00060000
-say r                                                                   00070000
-                                                                        00080000
-                                                                        00090000
-say "negative test"                                                     00090100
-prog = "1101,100,-1,4,0"                                                00090200
-rs = run2(prog)                                                         00090300
-say rs                                                                  00090400
-                                                                        00090500
-say "done with second :) "                                              00090600
-                                                                        00090700
-say "test simple"                                                       00090800
-prog = "3,0,4,0,99"                                                     00090900
-rs  = run2(prog)                                                        00091000
-say rs                                                                  00091100
-*/                                                                      00091200
-/*                                                                      00091300
-theInput=555                                                            00091400
-say run2("3,0,4,0,99")                                                  00091500
-say run2("1002,4,3,4,33")                                               00091600
-say run2("1101,100,-1,4,0") */                                          00091700
 theInput = 5                                                            00091802
-say run2("3,9,8,9,10,9,4,9,99,-1,8")                                    00092006
 p = ''                                                                  00092100
 p = p || '3, 225, 1, 225, 6, 6, 1100, '                                 00092200
 p = p || '1, 238, 225, 104, 0, 1101, 81, '                              00092300
@@ -181,22 +155,18 @@ run2:                                                                   00113100
         parm1 = p.p1                                                    00121600
         next = next + 2                                                 00121700
                                                                         00121800
-        say "store "theInput" at pos " parm1                            00121900
         p.parm1 = theInput                                              00122000
         iterate                                                         00123000
       end                                                               00124000
       when opcode = '04' then do               /* Output             */ 00125000
         p1 = next + 1                                                   00125100
         parm1 = p.p1                                                    00125200
-        say "parm1 ="parm1                                              00125300
         if mod1 = 0 then parm1 = p.parm1                                00125400
-        say "output at pos "parm1                                       00125500
         say "Output: " parm1                                            00125600
         next = next + 2                                                 00125700
         iterate                                                         00125800
       end                                                               00125900
       when opcode = '05' then do               /* Jump if true       */ 00126000
-        say "opcode 5"                                                  00126101
         p1 = next + 1                                                   00126300
         p2 = next + 2                                                   00126400
         parm1 = p.p1                                                    00126504
@@ -205,10 +175,8 @@ run2:                                                                   00113100
         if mod2 = 0 then parm2 = p.parm2                                00126800
         if parm1 /= 0 then next = parm2                                 00126900
                       else next = next + 3                              00127000
-        say "next is " next                                             00127104
       end                                                               00127200
       when opcode = '06' then do               /* Jump if false      */ 00127300
-        say "opcode 6"                                                  00127401
         p1 = next + 1                                                   00127500
         p2 = next + 2                                                   00127600
         parm1 = p.p1                                                    00127708
@@ -219,7 +187,6 @@ run2:                                                                   00113100
                      else next = next + 3                               00128200
       end                                                               00128300
       when opcode = '07' then do               /* Less than          */ 00128400
-        say "opcode 7"                                                  00128501
         p1 = next + 1                                                   00128600
         p2 = next + 2                                                   00128700
         p3 = next + 3                                                   00128800
@@ -233,7 +200,6 @@ run2:                                                                   00113100
         next = next + 4                                                 00129700
       end                                                               00129800
       when opcode = '08' then do               /* Equals             */ 00129900
-        say "opcode 8"                                                  00130101
         p1 = next + 1                                                   00130200
         p2 = next + 2                                                   00130300
         p3 = next + 3                                                   00130400
@@ -242,8 +208,6 @@ run2:                                                                   00113100
         parm3 = p.p3                                                    00130708
         if mod1 = 0 then parm1 = p.parm1                                00130800
         if mod2 = 0 then parm2 = p.parm2                                00130900
-        say "check if "parm1" == "parm2                                 00131110
-        say "store 1 in "parm3" if true"                                00131211
         if parm1 = parm2 then p.parm3 = 1                               00131300
                          else p.parm3 = 0                               00131400
         next = next + 4                                                 00131500
@@ -264,43 +228,3 @@ run2:                                                                   00113100
   end                                                                   00133000
   return res                                                            00133100
                                                                         00133200
-run:                                                                    00133300
-  parse arg prog                                                        00133400
-  /* prog is sets of 4 ints */                                          00133500
-  prog = translate(prog,' ',',')                                        00133600
-  instructions = words(prog)                                            00133700
-  p. = ''                                                               00133800
-  do i = 1 to instructions                                              00134000
-    p.i = word(prog, i)                                                 00140000
-  end                                                                   00150000
-  p.0 = instructions                                                    00160000
-  do jj = 1 to p.0 by 4                                                 00170000
-    if jj + 4 <= p.0 then do                                            00180000
-        verb = jj + 1                                                   00190000
-        noun = jj + 2                                                   00200000
-        res  = jj + 3                                                   00200100
-        rp = p.res + 1                                                  00200200
-        vp = p.verb + 1                                                 00200300
-        np = p.noun + 1                                                 00200400
-      if p.jj = "1" then do                                             00200500
-        p.rp = p.np + p.vp                                              00200600
-        iterate                                                         00200700
-      end                                                               00200800
-      if p.jj = "2" then do                                             00200900
-        p.rp = p.vp * p.np                                              00201000
-        iterate                                                         00202000
-      end                                                               00202100
-      if p.jj = "99" then do                                            00202200
-        leave                                                           00202300
-      end                                                               00202400
-    end                                                                 00202500
-  end                                                                   00202600
-  r = p.1                                                               00202700
-  do k = 2 to instructions                                              00202800
-    r = r','p.k                                                         00202900
-  end                                                                   00203000
-  return r                                                              00204000
-                                                                        00205000
-debug:                                                                  00206000
-  parse arg msg                                                         00207000
-  say msg                                                               00208000
