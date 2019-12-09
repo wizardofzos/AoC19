@@ -1,0 +1,159 @@
+/* REXX */                                                              00010000
+                                                                        00020000
+p = '109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99'         00060000
+say run2(p)                                                             00070000
+                                                                        00123800
+exit                                                                    00123900
+                                                                        00124000
+run2:                                                                   00124100
+  parse arg prog,in1,in2                                                00124200
+  res = "NO OUTPUT"                                                     00124300
+  theInput = in1                                                        00124400
+  next = 0                                                              00124500
+  /* check for saved state */                                           00124600
+  if pos('<',prog) > 0 then do                                          00124700
+    next = substr(prog,1,pos('<',prog)-1)      /* read saved ins pos */ 00124800
+    prog = substr(prog,pos('<',prog)+1)        /* for input wait     */ 00124900
+  end                                                                   00125000
+  if pos('>',prog) > 0 then do                                          00125100
+    next = substr(prog,1,pos('>',prog)-1)      /* read saved ins pos */ 00125200
+    prog = substr(prog,pos('=',prog)+1)        /* for output wait    */ 00125300
+  end                                                                   00125400
+  prog = translate(prog, ' ', ',')             /* get rid of commas  */ 00125500
+  instructions = words(prog)                   /* count them all     */ 00125600
+  p. = ''                                      /* stick em in a stem */ 00125700
+  do i = 0 to instructions                                              00125800
+    p.i= word(prog, i+1)                                                00125900
+  end                                                                   00126000
+  cont = 1                                     /* no halt psw :)     */ 00126100
+  do while cont = 1                                                     00126200
+    inst = right(p.next,'5',0)                 /* get the full inst  */ 00126300
+    opcode = substr(inst,4,2)                  /* get the opcode     */ 00126400
+    mod1   = substr(inst,3,1)                  /* mode 1st parm      */ 00126500
+    mod2   = substr(inst,2,1)                  /* mode 2nd parm      */ 00126600
+    mod3   = substr(inst,1,1)                  /* mode 3rd parm      */ 00126700
+    select                                                              00126800
+      when opcode = '01' then do               /* Addition           */ 00126900
+        p1 =   next + 1                                                 00127000
+        p2 =   next + 2                                                 00127100
+        p3 =   next + 3                                                 00127200
+        parm1 = p.p1                                                    00127300
+        parm2 = p.p2                                                    00127400
+        parm3 = p.p3                                                    00127500
+        next = next + 4                                                 00127600
+        if mod1 = 0 then parm1 = p.parm1                                00127700
+        if mod2 = 0 then parm2 = p.parm2                                00127800
+                                                                        00127900
+                                                                        00128000
+        p.parm3 = parm1 + parm2                                         00128100
+        iterate                                                         00128200
+      end                                                               00128300
+      when opcode = '02' then do               /* Multiplication     */ 00128400
+        p1 =   next + 1                                                 00128500
+        p2 =   next + 2                                                 00128600
+        p3 =   next + 3                                                 00128700
+        parm1 = p.p1                                                    00128800
+        parm2 = p.p2                                                    00128900
+        parm3 = p.p3                                                    00129000
+        next = next + 4                                                 00129100
+        if mod1 = 0 then parm1 = p.parm1                                00129200
+        if mod2 = 0 then parm2 = p.parm2                                00129300
+                                                                        00129400
+        p.parm3 = parm1 * parm2                                         00129500
+        iterate                                                         00129600
+      end                                                               00129700
+      when opcode = '03' then do               /* Store              */ 00129800
+        p1 =   next + 1                                                 00129900
+        parm1 = p.p1                                                    00130000
+        if theInput = null then do                                      00130100
+            /* input needed, save state */                              00130200
+            st    = next"<"                                             00130300
+            do x = 0 to instructions                                    00130400
+              st    = st    || p.x                                      00130500
+              if x <  instructions then                                 00130600
+                st   = st    || ","                                     00130700
+            end                                                         00130800
+            return st                                                   00130900
+        end                                                             00131000
+        p.parm1 = theInput                                              00131100
+        theInput = null                                                 00131200
+        next = next + 2                                                 00131300
+        iterate                                                         00131400
+      end                                                               00131500
+      when opcode = '04' then do               /* Output             */ 00131600
+        p1 = next + 1                                                   00131700
+        parm1 = p.p1                                                    00131800
+        if mod1 = 0 then parm1 = p.parm1                                00131900
+        /* There might be more outputs, save state and output */        00132000
+        next = next + 2                                                 00132100
+        st    = next">"parm1"="                                         00132200
+        do x = 0 to instructions                                        00132300
+          st    = st    || p.x                                          00132400
+          if x <  instructions then                                     00132500
+            st   = st    || ","                                         00132600
+        end                                                             00132700
+        return st                                                       00132800
+        iterate                                                         00132900
+      end                                                               00133000
+      when opcode = '05' then do               /* Jump if true       */ 00133100
+        p1 = next + 1                                                   00133200
+        p2 = next + 2                                                   00133300
+        parm1 = p.p1                                                    00133400
+        parm2 = p.p2                                                    00133500
+        if mod1 = 0 then parm1 = p.parm1                                00133600
+        if mod2 = 0 then parm2 = p.parm2                                00133700
+        if parm1 /= 0 then next = parm2                                 00133800
+                      else next = next + 3                              00133900
+      end                                                               00134000
+      when opcode = '06' then do               /* Jump if false      */ 00134100
+        p1 = next + 1                                                   00134200
+        p2 = next + 2                                                   00134300
+        parm1 = p.p1                                                    00134400
+        parm2 = p.p2                                                    00134500
+        if mod1 = 0 then parm1 = p.parm1                                00134600
+        if mod2 = 0 then parm2 = p.parm2                                00134700
+        if parm1 = 0 then next = parm2                                  00134800
+                     else next = next + 3                               00134900
+      end                                                               00135000
+      when opcode = '07' then do               /* Less than          */ 00135100
+        p1 = next + 1                                                   00135200
+        p2 = next + 2                                                   00135300
+        p3 = next + 3                                                   00135400
+        parm1 = p.p1                                                    00135500
+        parm2 = p.p2                                                    00135600
+        parm3 = p.p3                                                    00135700
+        if mod1 = 0 then parm1 = p.parm1                                00135800
+        if mod2 = 0 then parm2 = p.parm2                                00135900
+        if parm1 < parm2 then p.parm3 = 1                               00136000
+                         else p.parm3 = 0                               00136100
+        next = next + 4                                                 00136200
+      end                                                               00136300
+      when opcode = '08' then do               /* Equals             */ 00136400
+        p1 = next + 1                                                   00136500
+        p2 = next + 2                                                   00136600
+        p3 = next + 3                                                   00136700
+        parm1 = p.p1                                                    00136800
+        parm2 = p.p2                                                    00136900
+        parm3 = p.p3                                                    00137000
+        if mod1 = 0 then parm1 = p.parm1                                00137100
+        if mod2 = 0 then parm2 = p.parm2                                00137200
+        if parm1 = parm2 then p.parm3 = 1                               00137300
+                         else p.parm3 = 0                               00137400
+        next = next + 4                                                 00137500
+      end                                                               00137600
+      when opcode = '99' then do               /* Terminate          */ 00137700
+        cont = 0                                                        00137800
+      end                                                               00137900
+      otherwise do                                                      00138000
+        say "unexpected opcode ("opcode") at "next                      00138100
+      end                                                               00138200
+    end                                                                 00138300
+    if next > instructions then cont = 0                                00138400
+  end                                                                   00138500
+  return "DONE"                                                         00138600
+                                                                        00138700
+                                                                        00138800
+debug:                                                                  00138900
+  parse arg msg                                                         00139000
+  if OMGINEEDDEBUG=1 then say msg                                       00140000
+  return 0                                                              00150000
