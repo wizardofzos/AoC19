@@ -1,43 +1,50 @@
 /* REXX */                                                              00010000
                                                                         00020000
 p = '109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99'         00030012
+q  = '1102,34915192,34915192,7,4,7,99,0'                                00040023
+s = '104,1125899906842624,99'                                           00050025
                                                                         00054800
 OMGINEEDDEBUG = 0                                                       00054920
                                                                         00055020
 r = run2(p,null)                                                        00115202
 say r                                                                   00123802
-exit                                                                    00123900
-                                                                        00124000
-run2:                                                                   00124100
-  parse arg prog,in1,in2                                                00124200
-  res = "NO OUTPUT"                                                     00124300
-  theInput = in1                                                        00124400
-  next = 0                                                              00124500
-  relbase = 0                                                           00124606
-  /* check for saved state */                                           00124700
-  if pos('<',prog) > 0 then do                                          00124800
-    next = substr(prog,1,pos('<',prog)-1)      /* read saved ins pos */ 00124900
-    prog = substr(prog,pos('<',prog)+1)        /* for input wait     */ 00125000
-  end                                                                   00125100
-  if pos('>',prog) > 0 then do                                          00125200
-    next = substr(prog,1,pos('>',prog)-1)      /* read saved ins pos */ 00125300
-    prog = substr(prog,pos('=',prog)+1)        /* for output wait    */ 00125400
-  end                                                                   00125500
-  prog = translate(prog, ' ', ',')             /* get rid of commas  */ 00125600
-  instructions = words(prog)                   /* count them all     */ 00125700
-  p. = 0                                       /* stick em in a stem */ 00125806
-  do i = 0 to instructions                                              00125900
-    p.i= word(prog, i+1)                                                00126000
-  end                                                                   00126100
-  cont = 1                                     /* no halt psw :)     */ 00126200
-  do while cont = 1                                                     00126300
-    inst = right(p.next,'5',0)                 /* get the full inst  */ 00126400
-    opcode = substr(inst,4,2)                  /* get the opcode     */ 00126500
-    mod1   = substr(inst,3,1)                  /* mode parm1         */ 00126600
-    mod2   = substr(inst,2,1)                  /*      parm2         */ 00126700
-    mod3   = substr(inst,1,1)                  /*      parm3         */ 00126800
-    p1     = next + 1                          /* position parm1     */ 00126900
-    p2     = next + 2                          /*          parm2     */ 00127000
+r = run2(q,null)                                                        00123923
+say r                                                                   00124022
+r = run2(s,null)                                                        00124125
+say r                                                                   00124224
+                                                                        00124324
+exit                                                                    00124424
+                                                                        00124524
+run2:                                                                   00124624
+  parse arg prog,in1,in2                                                00124724
+  res = "NO OUTPUT"                                                     00124824
+  theInput = in1                                                        00124924
+  next = 0                                                              00125024
+  relbase = 0                                                           00125124
+  /* check for saved state */                                           00125224
+  if pos('<',prog) > 0 then do                                          00125324
+    next = substr(prog,1,pos('<',prog)-1)      /* read saved ins pos */ 00125424
+    prog = substr(prog,pos('<',prog)+1)        /* for input wait     */ 00125524
+  end                                                                   00125624
+  if pos('>',prog) > 0 then do                                          00125724
+    next = substr(prog,1,pos('>',prog)-1)      /* read saved ins pos */ 00125824
+    prog = substr(prog,pos('=',prog)+1)        /* for output wait    */ 00125924
+  end                                                                   00126024
+  prog = translate(prog, ' ', ',')             /* get rid of commas  */ 00126124
+  instructions = words(prog)                   /* count them all     */ 00126224
+  p. = 0                                       /* stick em in a stem */ 00126324
+  do i = 0 to instructions                                              00126424
+    p.i= word(prog, i+1)                                                00126524
+  end                                                                   00126624
+  cont = 1                                     /* no halt psw :)     */ 00126724
+  do while cont = 1                                                     00126824
+    inst = right(p.next,'5',0)                 /* get the full inst  */ 00126924
+    opcode = substr(inst,4,2)                  /* get the opcode     */ 00127024
+    mod1   = substr(inst,3,1)                  /* mode parm1         */ 00127124
+    mod2   = substr(inst,2,1)                  /*      parm2         */ 00127224
+    mod3   = substr(inst,1,1)                  /*      parm3         */ 00127324
+    p1     = next + 1                          /* position parm1     */ 00127424
+    p2     = next + 2                          /*          parm2     */ 00127524
     p3     = next + 3                          /*          parm3     */ 00128003
     if mod1 = 0 then do                        /* postion mode       */ 00128109
       pp = p.p1                                /* value is data at   */ 00128200
