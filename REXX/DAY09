@@ -1,244 +1,136 @@
 /* REXX */                                                              00010000
                                                                         00020000
-/* run test program until done */                                       00030005
-p = '109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99'         00060000
-r   = p                                                                 00070012
-do while r   /= "DONE"                                                  00123812
-  r   = run2(r,null)                                                    00123912
-  say r                                                                 00124013
-  if pos('>',r) > 0 then do                                             00124112
-    parse var r n '>' v '=' rest                                        00124214
-    say "Output: "v                                                     00124314
-  end                                                                   00124405
-end                                                                     00124505
-exit                                                                    00124600
-                                                                        00124700
-run2:                                                                   00124800
-  parse arg prog,in1,in2                                                00124900
-  res = "NO OUTPUT"                                                     00125000
-  theInput = in1                                                        00125100
-  next = 0                                                              00125200
-  relbase = 0                                  /* relative base      */ 00125301
-  say "next="next",relbase="relbase                                     00125402
-  /* check for saved state */                                           00125500
-  if pos('<',prog) > 0 then do                                          00125600
-    next = substr(prog,1,pos('<',prog)-1)      /* read saved ins pos */ 00125700
-    prog = substr(prog,pos('<',prog)+1)        /* for input wait     */ 00125800
-    relbase = substr(prog,pos('|',prog)+1)                              00125901
-    prog = substr(prog,1,pos('|',prog))                                 00126003
+p = '109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99'         00030012
+                                                                        00054800
+OMGINEEDDEBUG = 0                                                       00054920
+                                                                        00055020
+r = run2(p,null)                                                        00115202
+say r                                                                   00123802
+exit                                                                    00123900
+                                                                        00124000
+run2:                                                                   00124100
+  parse arg prog,in1,in2                                                00124200
+  res = "NO OUTPUT"                                                     00124300
+  theInput = in1                                                        00124400
+  next = 0                                                              00124500
+  relbase = 0                                                           00124606
+  /* check for saved state */                                           00124700
+  if pos('<',prog) > 0 then do                                          00124800
+    next = substr(prog,1,pos('<',prog)-1)      /* read saved ins pos */ 00124900
+    prog = substr(prog,pos('<',prog)+1)        /* for input wait     */ 00125000
+  end                                                                   00125100
+  if pos('>',prog) > 0 then do                                          00125200
+    next = substr(prog,1,pos('>',prog)-1)      /* read saved ins pos */ 00125300
+    prog = substr(prog,pos('=',prog)+1)        /* for output wait    */ 00125400
+  end                                                                   00125500
+  prog = translate(prog, ' ', ',')             /* get rid of commas  */ 00125600
+  instructions = words(prog)                   /* count them all     */ 00125700
+  p. = 0                                       /* stick em in a stem */ 00125806
+  do i = 0 to instructions                                              00125900
+    p.i= word(prog, i+1)                                                00126000
   end                                                                   00126100
-  if pos('>',prog) > 0 then do                                          00126200
-    next = substr(prog,1,pos('>',prog)-1)      /* read saved ins pos */ 00126300
-    prog = substr(prog,pos('=',prog)+1)        /* for output wait    */ 00126400
-    relbase = substr(prog,pos('|',prog)+1)                              00126501
-    prog = substr(prog,1,pos('|',prog))                                 00126603
-  end                                                                   00126700
-  say "next="next",relbase="relbase                                     00126815
-  say prog                                                              00126906
-  prog = translate(prog, ' ', ',')             /* get rid of commas  */ 00127000
-  instructions = words(prog)                   /* count them all     */ 00127100
-  p. = ''                                      /* stick em in a stem */ 00127200
-  do i = 0 to instructions                                              00127300
-    p.i= word(prog, i+1)                                                00127400
-  end                                                                   00127500
-  cont = 1                                     /* no halt psw :)     */ 00127600
-  do while cont = 1                                                     00127700
-    inst = right(p.next,'5',0)                 /* get the full inst  */ 00127800
-    opcode = substr(inst,4,2)                  /* get the opcode     */ 00127900
-    mod1   = substr(inst,3,1)                  /* mode 1st parm      */ 00128000
-    mod2   = substr(inst,2,1)                  /* mode 2nd parm      */ 00128100
-    mod3   = substr(inst,1,1)                  /* mode 3rd parm      */ 00128200
-    select                                                              00128300
-      when opcode = '01' then do               /* Addition           */ 00128400
-        p1 =   next + 1                                                 00128500
-        p2 =   next + 2                                                 00128600
-        p3 =   next + 3                                                 00128700
-        parm1 = p.p1                                                    00128800
-        parm2 = p.p2                                                    00128900
-        parm3 = p.p3                                                    00129000
-        next = next + 4                                                 00129100
-        if mod1 = 0 then parm1 = p.parm1                                00129200
-        if mod1 = 2 then do                                             00129301
-          parm1 = relbase + parm1                                       00129401
-          parm1 = p.parm1                                               00129501
-        end                                                             00129601
-        if mod2 = 0 then parm2 = p.parm2                                00129700
-        if mod2 = 2 then do                                             00129801
-          parm2 = relbase + parm2                                       00129901
-          parm2 = p.parm2                                               00130001
-        end                                                             00130101
-                                                                        00130200
-                                                                        00130300
-        p.parm3 = parm1 + parm2                                         00130400
-        iterate                                                         00130500
-      end                                                               00130600
-      when opcode = '02' then do               /* Multiplication     */ 00130700
-        p1 =   next + 1                                                 00130800
-        p2 =   next + 2                                                 00130900
-        p3 =   next + 3                                                 00131000
-        parm1 = p.p1                                                    00131100
-        parm2 = p.p2                                                    00131200
-        parm3 = p.p3                                                    00131300
-        next = next + 4                                                 00131400
-        if mod1 = 0 then parm1 = p.parm1                                00131500
-        if mod1 = 2 then do                                             00131601
-          parm1 = relbase + parm1                                       00131701
-          parm1 = p.parm1                                               00131801
-        end                                                             00131901
-        if mod2 = 0 then parm2 = p.parm2                                00132000
-        if mod2 = 2 then do                                             00132101
-          parm2 = relbase + parm2                                       00132201
-          parm2 = p.parm2                                               00132301
-        end                                                             00132401
-                                                                        00132500
-        p.parm3 = parm1 * parm2                                         00132600
-        iterate                                                         00132700
-      end                                                               00132800
-      when opcode = '03' then do               /* Store              */ 00132900
-        p1 =   next + 1                                                 00133000
-        parm1 = p.p1                                                    00133100
-        if theInput = null then do                                      00133200
-            /* input needed, save state */                              00133300
-            st    = next"<"                                             00133400
-            do x = 0 to instructions                                    00133500
-              st    = st    || p.x                                      00133600
-              if x <  instructions then                                 00133700
-                st   = st    || ","                                     00133800
-            end                                                         00133900
-            st = st || '|' relbase                                      00134001
-            return st                                                   00134100
-        end                                                             00134200
-        p.parm1 = theInput                                              00134300
-        theInput = null                                                 00134400
-        next = next + 2                                                 00134500
-        iterate                                                         00134600
-      end                                                               00134700
-      when opcode = '04' then do               /* Output             */ 00134800
-        p1 = next + 1                                                   00134900
-        parm1 = p.p1                                                    00135000
-        if mod1 = 0 then parm1 = p.parm1                                00135100
-        if mod1 = 2 then do                                             00135201
-          parm1 = relbase + parm1                                       00135301
-          parm1 = p.parm1                                               00135401
-        end                                                             00135501
-        /* There might be more outputs, save state and output */        00135600
-        next = next + 2                                                 00135700
-        st    = next">"parm1"="                                         00135800
-        do x = 0 to instructions                                        00135900
-          st    = st    || p.x                                          00136000
-          if x <  instructions then                                     00136100
-            st   = st    || ","                                         00136200
-        end                                                             00136300
-        st = st || '|' relbase                                          00136401
-        return st                                                       00136500
+  cont = 1                                     /* no halt psw :)     */ 00126200
+  do while cont = 1                                                     00126300
+    inst = right(p.next,'5',0)                 /* get the full inst  */ 00126400
+    opcode = substr(inst,4,2)                  /* get the opcode     */ 00126500
+    mod1   = substr(inst,3,1)                  /* mode parm1         */ 00126600
+    mod2   = substr(inst,2,1)                  /*      parm2         */ 00126700
+    mod3   = substr(inst,1,1)                  /*      parm3         */ 00126800
+    p1     = next + 1                          /* position parm1     */ 00126900
+    p2     = next + 2                          /*          parm2     */ 00127000
+    p3     = next + 3                          /*          parm3     */ 00128003
+    if mod1 = 0 then do                        /* postion mode       */ 00128109
+      pp = p.p1                                /* value is data at   */ 00128200
+      parm1 = p.pp                             /* value of pos p1    */ 00128300
+    end                                                                 00128400
+    if mod1 = 1 then                           /* immediate mode     */ 00128509
+      parm1 = p.p1                             /* value is data at p1*/ 00128600
+    if mod1 = 2 then do                        /* relative mode      */ 00128700
+      pp = p.p1 + relbase                      /* value is data at   */ 00128800
+      parm1 = p.pp                             /* value p1 + relbase */ 00128900
+    end                                                                 00129000
+    /* Value of parm2 */                                                00129100
+    if mod2 = 0 then do                        /* postion mode       */ 00129209
+      pp = p.p2                                /* value is data at   */ 00129300
+      parm2 = p.pp                             /* value of pos p2    */ 00129400
+    end                                                                 00129500
+    if mod2 = 1 then                           /* immediate mode     */ 00129609
+      parm2 = p.p2                             /* value is data at p2*/ 00129700
+    if mod2 = 2 then do                        /* relative mode      */ 00129800
+      pp = p.p2 + relbase                      /* value is data at   */ 00129900
+      parm2 = p.pp                             /* value p2 + relbase */ 00130000
+    end                                                                 00130100
+    /* Value of parm3 */                                                00130200
+    if mod3 = 0 then do                        /* postion mode       */ 00130409
+      parm3 = p.p3                             /* value of pos p3    */ 00130610
+    end                                                                 00130700
+    if mod3 = 1 then                           /* immediate mode     */ 00130809
+      say "cannot!"                            /* value is data at p3*/ 00130910
+    if mod3 = 2 then do                        /* relative mode      */ 00131000
+      say "Cannot!"                            /* value is data at   */ 00131110
+    end                                                                 00131300
+    f = debug('opcode='opcode)                                          00131418
+    f = debug('relbase='relbase)                                        00131518
+    f = debug('parm1='parm1)                                            00131615
+    f = debug('parm2='parm1)                                            00131716
+    f = debug('parm2='parm3)                                            00131815
+    select                                                              00131915
+      when opcode = '01' then do               /* Addition           */ 00132015
+        p.parm3 = parm1 + parm2                                         00132115
+        next = next + 4                                                 00132215
+        iterate                                                         00132315
+      end                                                               00132415
+      when opcode = '02' then do               /* Multiplication     */ 00133000
+        f = debug("02, "parm1"*"parm2"-->"parm3)                        00133105
+        p.parm3 = parm1 * parm2                                         00133200
+        next = next + 4                                                 00133301
+        iterate                                                         00133400
+      end                                                               00133500
+      when opcode = '03' then do               /* Store              */ 00133600
+        p.parm1 = theInput                                              00134700
+        next = next + 2                                                 00134900
+        iterate                                                         00135000
+      end                                                               00135100
+      when opcode = '04' then do               /* Output             */ 00135200
+        say "Output: "parm1                                             00136411
+        next = next + 2                                                 00136519
         iterate                                                         00136600
       end                                                               00136700
       when opcode = '05' then do               /* Jump if true       */ 00136800
-        p1 = next + 1                                                   00136900
-        p2 = next + 2                                                   00137000
-        parm1 = p.p1                                                    00137100
-        parm2 = p.p2                                                    00137200
-        if mod1 = 0 then parm1 = p.parm1                                00137300
-        if mod1 = 2 then do                                             00137401
-          parm1 = relbase + parm1                                       00137501
-          parm1 = p.parm1                                               00137601
-        end                                                             00137701
-        if mod2 = 0 then parm2 = p.parm2                                00137800
-        if mod2 = 2 then do                                             00137901
-          parm2 = relbase + parm2                                       00138001
-          parm2 = p.parm2                                               00138101
-        end                                                             00138201
-        if parm1 /= 0 then next = parm2                                 00138300
-                      else next = next + 3                              00138400
-      end                                                               00138500
-      when opcode = '06' then do               /* Jump if false      */ 00138600
-        p1 = next + 1                                                   00138700
-        p2 = next + 2                                                   00138800
-        parm1 = p.p1                                                    00138900
-        parm2 = p.p2                                                    00139000
-        if mod1 = 0 then parm1 = p.parm1                                00139100
-        if mod1 = 2 then do                                             00139201
-          parm1 = relbase + parm1                                       00139301
-          parm1 = p.parm1                                               00139401
-        end                                                             00139501
-        if mod2 = 0 then parm2 = p.parm2                                00139600
-        if mod2 = 2 then do                                             00139701
-          parm2 = relbase + parm2                                       00139801
-          parm2 = p.parm2                                               00139901
-        end                                                             00140001
-        if parm1 = 0 then next = parm2                                  00140100
-                     else next = next + 3                               00140200
-      end                                                               00140300
-      when opcode = '07' then do               /* Less than          */ 00140400
-        p1 = next + 1                                                   00140500
-        p2 = next + 2                                                   00140600
-        p3 = next + 3                                                   00140700
-        parm1 = p.p1                                                    00140800
-        parm2 = p.p2                                                    00140900
-        parm3 = p.p3                                                    00141000
-        if mod1 = 0 then parm1 = p.parm1                                00141100
-        if mod1 = 2 then do                                             00141201
-          parm1 = relbase + parm1                                       00141301
-          parm1 = p.parm1                                               00141401
-        end                                                             00141501
-        if mod2 = 0 then parm2 = p.parm2                                00141600
-        if mod2 = 2 then do                                             00141701
-          parm2 = relbase + parm2                                       00141801
-          parm2 = p.parm2                                               00141901
-        end                                                             00142001
-        if parm1 < parm2 then p.parm3 = 1                               00142100
-                         else p.parm3 = 0                               00142200
-        next = next + 4                                                 00142300
-      end                                                               00142400
-      when opcode = '08' then do               /* Equals             */ 00142500
-        p1 = next + 1                                                   00142600
-        p2 = next + 2                                                   00142700
-        p3 = next + 3                                                   00142800
-        parm1 = p.p1                                                    00142900
-        parm2 = p.p2                                                    00143000
-        parm3 = p.p3                                                    00143100
-        if mod1 = 0 then parm1 = p.parm1                                00143200
-        if mod1 = 2 then do                                             00143301
-          parm1 = relbase + parm1                                       00143401
-          parm1 = p.parm1                                               00143501
-        end                                                             00143601
-        if mod2 = 0 then parm2 = p.parm2                                00143700
-        if mod2 = 2 then do                                             00143801
-          parm2 = relbase + parm2                                       00143901
-          parm2 = p.parm2                                               00144001
-        end                                                             00144101
-        if parm1 = parm2 then p.parm3 = 1                               00144200
-                         else p.parm3 = 0                               00144300
-        next = next + 4                                                 00144400
-      end                                                               00144500
-      when opcode = '09' then do               /* Adjust relbase     */ 00144601
-        p1 = next + 1                                                   00144701
-        parm1 = p.p1                                                    00144801
-        say "mode="mod1                                                 00144910
-        say "next now is "next                                          00145011
-        next = next + 2                                                 00145111
-        say "next now is "next                                          00145211
-        if mod1 = 0 then parm1 = p.parm1                                00145301
-        if mod1 = 2 then do                                             00145401
-          parm1 = relbase + parm2                                       00145501
-          parm1 = p.parm1                                               00145601
-        end                                                             00145701
-        say "setting relbase to"parm1                                   00145807
-        relbase = parm1                                                 00145901
-      end                                                               00146001
-      when opcode = '99' then do               /* Terminate          */ 00146100
-        cont = 0                                                        00146200
-      end                                                               00146300
-      otherwise do                                                      00146400
-        say "unexpected opcode ("opcode") at "next                      00146500
-      end                                                               00146600
-    end                                                                 00146700
-    if next > instructions then cont = 0                                00146800
-  end                                                                   00146900
-  return "DONE"                                                         00147000
-                                                                        00147100
-                                                                        00147200
-debug:                                                                  00147300
-  parse arg msg                                                         00147400
-  if OMGINEEDDEBUG=1 then say msg                                       00148000
+        if parm1 /= 0 then next = parm2                                 00137400
+                      else next = next + 3                              00137500
+      end                                                               00137600
+      when opcode = '06' then do               /* Jump if false      */ 00137700
+        if parm1 = 0 then next = parm2                                  00138400
+                     else next = next + 3                               00138500
+      end                                                               00138600
+      when opcode = '07' then do               /* Less than          */ 00138700
+        if parm1 < parm2 then p.parm3 = 1                               00139600
+                         else p.parm3 = 0                               00139700
+        next = next + 4                                                 00139800
+      end                                                               00139900
+      when opcode = '08' then do               /* Equals             */ 00140000
+        if parm1 = parm2 then p.parm3 = 1                               00140900
+                         else p.parm3 = 0                               00141000
+        next = next + 4                                                 00141100
+      end                                                               00141200
+      when opcode = '09' then do               /* Adjust relbase     */ 00141314
+        relbase = relbase + parm1                                       00141514
+        next = next + 2                                                 00141614
+      end                                                               00141714
+      when opcode = '99' then do               /* Terminate          */ 00141814
+        cont = 0                                                        00141914
+      end                                                               00142014
+      otherwise do                                                      00142114
+        say "unexpected opcode ("opcode") at "next                      00142214
+      end                                                               00142314
+    end                                                                 00142414
+    if next > instructions then cont = 0                                00142514
+  end                                                                   00142614
+  return "DONE"                                                         00142714
+                                                                        00142814
+                                                                        00142914
+debug:                                                                  00143014
+  parse arg msg                                                         00143114
+  if OMGINEEDDEBUG=1 then say msg                                       00144014
   return 0                                                              00150000
